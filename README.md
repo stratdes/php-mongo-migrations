@@ -1,4 +1,4 @@
-# MongoDb Migrations
+# MongoDB Migrations
 
 [![Build Status](https://travis-ci.org/gruberro/php-mongo-migrations.svg?branch=master)](https://travis-ci.org/gruberro/php-mongo-migrations)
 [![Code Coverage](https://scrutinizer-ci.com/g/gruberro/php-mongo-migrations/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/gruberro/php-mongo-migrations/?branch=master)

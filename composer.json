@@ -1,6 +1,6 @@
 {
     "name": "gruberro/php-mongo-migrations",
-    "description": "Manage changes for your MongoDb documents",
+    "description": "Manage changes for your MongoDB documents",
     "type": "library",
     "license": "MIT",
     "authors": [

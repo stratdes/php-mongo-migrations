@@ -10,7 +10,7 @@
          syntaxCheck="false"
 >
     <testsuites>
-        <testsuite name="MongoDb Migrations test suite">
+        <testsuite name="MongoDB Migrations test suite">
             <directory>./tests/</directory>
         </testsuite>
     </testsuites>
