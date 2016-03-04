@@ -6,7 +6,7 @@ use Gruberro\MongoDbMigrations;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
-class MigrationsCommandTest extends \PHPUnit_Framework_TestCase
+class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
 {
     public function testExecute()
     {
@@ -18,7 +18,7 @@ class MigrationsCommandTest extends \PHPUnit_Framework_TestCase
         $commandTester->execute(
             [
                 'command' => $command->getName(),
-                'database' => __FUNCTION__,
+                'database' => $this->getTestDatabaseName(),
                 'migration-directories' => [__DIR__ . '/../../../examples/Migrations/'],
             ]
         );
