@@ -1,6 +1,6 @@
 <?php
 
-namespace Migrations;
+namespace MyMigrations;
 
 use Gruberro\MongoDbMigrations;
 
