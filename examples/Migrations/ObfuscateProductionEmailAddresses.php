@@ -11,7 +11,7 @@ class ObfuscateProductionEmailAddresses implements MongoDbMigrations\MigrationIn
      */
     public function getId()
     {
-        return 'migration-3';
+        return 'obfuscate-production-email-addresses';
     }
 
     /**

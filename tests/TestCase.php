@@ -5,11 +5,35 @@ namespace Gruberro\MongoDbMigrations\Tests;
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
     /**
+     * @var bool
+     */
+    protected $hasDependencies = false;
+
+    /**
      * {@inheritdoc}
      */
-    protected function tearDown()
+    protected function setUp()
     {
-        $this->getTestDatabase()->drop();
+        if (!$this->hasDependencies) {
+            $this->getTestDatabase()->drop();
+        }
+    }
+
+    /**
+     * This method is overwritten to ensure there is a way to recognize @dependant tests and to avoid
+     * database "refreshes" for those kind of tests.
+     *
+     * {@inheritdoc}
+     */
+    public function setDependencies(array $dependencies)
+    {
+        parent::setDependencies($dependencies);
+
+        if (count($dependencies) > 0) {
+            $this->hasDependencies = true;
+        } else {
+            $this->hasDependencies = false;
+        }
     }
 
     /**
