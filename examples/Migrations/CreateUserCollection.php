@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace MyMigrations;
 
@@ -10,7 +10,7 @@ class CreateUserCollection implements MongoDbMigrations\MigrationInterface
     /**
      * {@inheritdoc}
      */
-    public function getId()
+    public function getId(): string
     {
         return 'create-user-collection-and-its-indexes';
     }
@@ -18,7 +18,7 @@ class CreateUserCollection implements MongoDbMigrations\MigrationInterface
     /**
      * {@inheritdoc}
      */
-    public function getCreateDate()
+    public function getCreateDate(): \DateTime
     {
         return new \DateTime('2016-02-25 16:30:00');
     }

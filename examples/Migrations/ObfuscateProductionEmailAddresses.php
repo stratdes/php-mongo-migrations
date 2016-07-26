@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace MyMigrations;
 
@@ -10,7 +10,7 @@ class ObfuscateProductionEmailAddresses implements MongoDbMigrations\MigrationIn
     /**
      * {@inheritdoc}
      */
-    public function getId()
+    public function getId(): string
     {
         return 'obfuscate-production-email-addresses';
     }
@@ -18,7 +18,7 @@ class ObfuscateProductionEmailAddresses implements MongoDbMigrations\MigrationIn
     /**
      * {@inheritdoc}
      */
-    public function getCreateDate()
+    public function getCreateDate(): \DateTime
     {
         return new \DateTime('2016-01-01 12:12:16');
     }
@@ -28,7 +28,7 @@ class ObfuscateProductionEmailAddresses implements MongoDbMigrations\MigrationIn
      *
      * {@inheritdoc}
      */
-    public function getContexts()
+    public function getContexts(): array
     {
         return ['development', 'staging'];
     }

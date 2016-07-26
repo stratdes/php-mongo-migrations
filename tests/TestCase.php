@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Gruberro\MongoDbMigrations\Tests;
 
@@ -20,7 +20,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     /**
      * @return Client
      */
-    protected function getTestClient()
+    protected function getTestClient(): Client
     {
         return new Client();
     }
@@ -28,7 +28,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     /**
      * @return string
      */
-    protected function getTestDatabaseName()
+    protected function getTestDatabaseName(): string
     {
         return 'php-mongo-migrations';
     }
@@ -36,7 +36,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     /**
      * @return Database
      */
-    protected function getTestDatabase()
+    protected function getTestDatabase(): Database
     {
         $client = $this->getTestClient();
         return $client->selectDatabase($this->getTestDatabaseName());

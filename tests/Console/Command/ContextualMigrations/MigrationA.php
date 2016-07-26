@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace TestMigrations\ContextualMigrations;
 
@@ -7,12 +7,12 @@ use MongoDB\Database;
 
 class MigrationA implements MongoDbMigrations\MigrationInterface, MongoDbMigrations\ContextualMigrationInterface
 {
-    public function getId()
+    public function getId(): string
     {
         return 'some-context-migration';
     }
 
-    public function getCreateDate()
+    public function getCreateDate(): \DateTime
     {
         return new \DateTime('2016-02-25 16:30:00');
     }
@@ -21,7 +21,7 @@ class MigrationA implements MongoDbMigrations\MigrationInterface, MongoDbMigrati
     {
     }
 
-    public function getContexts()
+    public function getContexts(): array
     {
         return ['some-context'];
     }

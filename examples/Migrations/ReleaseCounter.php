@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace MyMigrations;
 
@@ -10,7 +10,7 @@ class ReleaseCounter implements MongoDbMigrations\MigrationInterface, MongoDbMig
     /**
      * {@inheritdoc}
      */
-    public function getId()
+    public function getId(): string
     {
         return 'release-counter';
     }
@@ -18,7 +18,7 @@ class ReleaseCounter implements MongoDbMigrations\MigrationInterface, MongoDbMig
     /**
      * {@inheritdoc}
      */
-    public function getCreateDate()
+    public function getCreateDate(): \DateTime
     {
         return new \DateTime('2016-01-01 00:00:00');
     }

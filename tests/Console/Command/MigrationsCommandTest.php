@@ -1,19 +1,18 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Gruberro\MongoDbMigrations\Tests\Console\Command;
 
 use Gruberro\MongoDbMigrations;
 use MongoDB;
 use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
 class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
 {
     /**
-     * @return CommandTester
+     * @return MongoDbMigrations\Console\Command\MigrationsCommand
      */
-    public function testExecuteProjectExamples()
+    public function testExecuteProjectExamples(): MongoDbMigrations\Console\Command\MigrationsCommand
     {
         $application = new Application();
         $application->add(new MongoDbMigrations\Console\Command\MigrationsCommand());
@@ -57,9 +56,9 @@ class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
     /**
      * @depends testExecuteProjectExamples
      *
-     * @param Command $command
+     * @param MongoDbMigrations\Console\Command\MigrationsCommand $command
      */
-    public function testExecuteProjectExamplesTwice(Command $command)
+    public function testExecuteProjectExamplesTwice(MongoDbMigrations\Console\Command\MigrationsCommand $command)
     {
         $databaseMigrationsCollection = $this->getTestDatabase()->selectCollection('DATABASE_MIGRATIONS');
         $runAlwaysMigration = $databaseMigrationsCollection->findOne(['run_always' => true]);
