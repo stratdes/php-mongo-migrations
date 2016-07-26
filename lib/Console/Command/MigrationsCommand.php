@@ -3,6 +3,7 @@
 namespace Gruberro\MongoDbMigrations\Console\Command;
 
 use Gruberro\MongoDbMigrations;
+use MongoDB;
 use Symfony\Component\Console;
 
 class MigrationsCommand extends Console\Command\Command
@@ -48,8 +49,8 @@ class MigrationsCommand extends Console\Command\Command
      */
     protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output)
     {
-        $client = new \MongoClient($input->getOption('server'));
-        $db = $client->selectDB($input->getArgument('database'));
+        $client = new MongoDB\Client($input->getOption('server'));
+        $db = $client->selectDatabase($input->getArgument('database'));
         $output->writeln("<info>✓ Successfully established database connection</info>", $output::VERBOSITY_VERBOSE);
 
         $directories = $input->getArgument('migration-directories');
@@ -109,8 +110,8 @@ class MigrationsCommand extends Console\Command\Command
 
         $databaseMigrationsLockCollection = $db->selectCollection('DATABASE_MIGRATIONS_LOCK');
 
-        $currentLock = $databaseMigrationsLockCollection->findAndModify(['locked' => ['$exists' => true]], ['locked' => true, 'last_locked_date' => new \MongoDate()], [], ['upsert' => true]);
-        if ($currentLock !== null && $currentLock['locked'] === true) {
+        $currentLock = $databaseMigrationsLockCollection->findOneAndReplace(['locked' => ['$exists' => true]], ['locked' => true, 'last_locked_date' => new MongoDB\BSON\UTCDatetime((new \DateTime())->getTimestamp() * 1000)], ['upsert' => true]);
+        if ($currentLock !== null && $currentLock->locked === true) {
             throw new Console\Exception\RuntimeException('Concurrent migrations are not allowed');
         }
 
@@ -119,7 +120,7 @@ class MigrationsCommand extends Console\Command\Command
 
             $databaseMigrationsCollection = $db->selectCollection('DATABASE_MIGRATIONS');
 
-            if (count($databaseMigrationsCollection->getIndexInfo()) <= 1) {
+            if (count($databaseMigrationsCollection->listIndexes()) <= 1) {
                 $databaseMigrationsCollection->createIndex(['migration_id' => 1],
                     ['unique' => true, 'background' => false]);
             }
@@ -165,7 +166,7 @@ class MigrationsCommand extends Console\Command\Command
                 $migrationInfo = [
                     'migration_id' => $id,
                     'migration_class' => get_class($migration),
-                    'last_execution_date' => new \MongoDate(),
+                    'last_execution_date' => new MongoDB\BSON\UTCDatetime((new \DateTime())->getTimestamp() * 1000),
                     'run_always' => $migration instanceof MongoDbMigrations\RunAlwaysMigrationInterface,
                 ];
 
@@ -173,9 +174,9 @@ class MigrationsCommand extends Console\Command\Command
                     $migrationInfo['contexts'] = $migration->getContexts();
                 }
 
-                $databaseMigrationsCollection->update(
+                $databaseMigrationsCollection->updateOne(
                     ['migration_id' => $id],
-                    $migrationInfo,
+                    ['$set' => $migrationInfo],
                     ['upsert' => true]
                 );
             }
@@ -187,7 +188,7 @@ class MigrationsCommand extends Console\Command\Command
         } catch (\Exception $e) {
             throw new Console\Exception\RuntimeException('Error while executing migrations', $e->getCode(), $e);
         } finally {
-            $databaseMigrationsLockCollection->update(['locked' => true], ['$set' => ['locked' => false]]);
+            $databaseMigrationsLockCollection->updateOne(['locked' => true], ['$set' => ['locked' => false]]);
             $output->writeln("<info>✓ Successfully released migration lock</info>", $output::VERBOSITY_VERBOSE);
         }
     }

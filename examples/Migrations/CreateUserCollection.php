@@ -3,6 +3,7 @@
 namespace MyMigrations;
 
 use Gruberro\MongoDbMigrations;
+use MongoDB\Database;
 
 class CreateUserCollection implements MongoDbMigrations\MigrationInterface
 {
@@ -30,12 +31,12 @@ class CreateUserCollection implements MongoDbMigrations\MigrationInterface
      *
      * {@inheritdoc}
      */
-    public function execute(\MongoDB $db)
+    public function execute(Database $db)
     {
         $userCollection = $db->selectCollection('user');
 
-        $userCollection->createIndex(['email_address' => true], ['unique' => true]);
+        $userCollection->createIndex(['email_address' => 1], ['unique' => true]);
 
-        $userCollection->insert(['username' => 'admin', 'password' => password_hash('topsecret', PASSWORD_DEFAULT), 'email_address' => 'admin@exmaple.com']);
+        $userCollection->insertOne(['username' => 'admin', 'password' => password_hash('topsecret', PASSWORD_DEFAULT), 'email_address' => 'admin@exmaple.com']);
     }
 }

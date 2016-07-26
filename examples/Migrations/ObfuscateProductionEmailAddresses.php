@@ -3,6 +3,7 @@
 namespace MyMigrations;
 
 use Gruberro\MongoDbMigrations;
+use MongoDB\Database;
 
 class ObfuscateProductionEmailAddresses implements MongoDbMigrations\MigrationInterface, MongoDbMigrations\ContextualMigrationInterface
 {
@@ -39,9 +40,9 @@ class ObfuscateProductionEmailAddresses implements MongoDbMigrations\MigrationIn
      *
      * {@inheritdoc}
      */
-    public function execute(\MongoDB $db)
+    public function execute(Database $db)
     {
         $userCollection = $db->selectCollection('user');
-        $userCollection->update(['email_address' => ['$ne' => 'deleted']], ['email_address' => 'deleted'], ['multi' => true]);
+        $userCollection->updateMany(['email_address' => ['$ne' => 'deleted']], ['$set' => ['email_address' => 'deleted']]);
     }
 }

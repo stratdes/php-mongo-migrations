@@ -3,6 +3,7 @@
 namespace MyMigrations;
 
 use Gruberro\MongoDbMigrations;
+use MongoDB;
 
 class ReleaseCounter implements MongoDbMigrations\MigrationInterface, MongoDbMigrations\RunAlwaysMigrationInterface
 {
@@ -27,9 +28,9 @@ class ReleaseCounter implements MongoDbMigrations\MigrationInterface, MongoDbMig
      *
      * {@inheritdoc}
      */
-    public function execute(\MongoDB $db)
+    public function execute(MongoDB\Database $db)
     {
         $releaseCollection = $db->selectCollection('releases');
-        $releaseCollection->insert(['created' => new \MongoDate()]);
+        $releaseCollection->insertOne(['created' => new MongoDB\BSON\UTCDatetime((new \DateTime())->getTimestamp() * 1000)]);
     }
 }

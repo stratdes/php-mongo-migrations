@@ -3,6 +3,7 @@
 namespace TestMigrations\DuplicateMigrationIds;
 
 use Gruberro\MongoDbMigrations;
+use MongoDB\Database;
 
 class MigrationB implements MongoDbMigrations\MigrationInterface
 {
@@ -16,7 +17,7 @@ class MigrationB implements MongoDbMigrations\MigrationInterface
         return new \DateTime('2016-02-25 16:30:00');
     }
 
-    public function execute(\MongoDB $db)
+    public function execute(Database $db)
     {
     }
 }

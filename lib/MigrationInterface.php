@@ -2,6 +2,8 @@
 
 namespace Gruberro\MongoDbMigrations;
 
+use MongoDB\Database;
+
 interface MigrationInterface
 {
     /**
@@ -19,7 +21,7 @@ interface MigrationInterface
     public function getCreateDate();
 
     /**
-     * @param \MongoDB $db
+     * @param Database $db
      */
-    public function execute(\MongoDB $db);
+    public function execute(Database $db);
 }
