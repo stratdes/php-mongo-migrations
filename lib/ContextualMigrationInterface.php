@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Gruberro\MongoDbMigrations;
 
@@ -9,5 +9,5 @@ interface ContextualMigrationInterface
      *
      * @return array
      */
-    public function getContexts();
+    public function getContexts(): array;
 }

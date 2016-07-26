@@ -1,18 +1,18 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Gruberro\MongoDbMigrations\Tests\Console\Command;
 
 use Gruberro\MongoDbMigrations;
+use MongoDB;
 use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
 class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
 {
     /**
-     * @return CommandTester
+     * @return MongoDbMigrations\Console\Command\MigrationsCommand
      */
-    public function testExecuteProjectExamples()
+    public function testExecuteProjectExamples(): MongoDbMigrations\Console\Command\MigrationsCommand
     {
         $application = new Application();
         $application->add(new MongoDbMigrations\Console\Command\MigrationsCommand());
@@ -37,7 +37,7 @@ class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
         );
 
         $databaseMigrationsCollection = $this->getTestDatabase()->selectCollection('DATABASE_MIGRATIONS');
-        $executedMigrations = $databaseMigrationsCollection->find();
+        $executedMigrations = $databaseMigrationsCollection->find()->toArray();
         $this->assertCount(3, $executedMigrations);
 
         $expectedMigrations = [
@@ -56,13 +56,15 @@ class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
     /**
      * @depends testExecuteProjectExamples
      *
-     * @param Command $command
+     * @param MongoDbMigrations\Console\Command\MigrationsCommand $command
      */
-    public function testExecuteProjectExamplesTwice(Command $command)
+    public function testExecuteProjectExamplesTwice(MongoDbMigrations\Console\Command\MigrationsCommand $command)
     {
         $databaseMigrationsCollection = $this->getTestDatabase()->selectCollection('DATABASE_MIGRATIONS');
         $runAlwaysMigration = $databaseMigrationsCollection->findOne(['run_always' => true]);
         $this->assertNotNull($runAlwaysMigration, 'There must be at least one run always migration');
+
+        sleep(1);
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(
@@ -82,7 +84,7 @@ class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
             'The database lock must not be acquired!'
         );
 
-        $executedMigrations = $databaseMigrationsCollection->find();
+        $executedMigrations = $databaseMigrationsCollection->find()->toArray();
         $this->assertCount(3, $executedMigrations);
 
         $expectedMigrations = [
@@ -96,8 +98,8 @@ class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
 
             if ($migration['run_always'] === true) {
                 $this->assertGreaterThan(
-                    $runAlwaysMigration['last_execution_date'],
-                    $migration['last_execution_date'],
+                    $runAlwaysMigration['last_execution_date']->toDateTime(),
+                    $migration['last_execution_date']->toDateTime(),
                     'A re-running migration must update its last execution date'
                 );
             }
@@ -123,7 +125,7 @@ class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
             $this->assertTrue($reflectionClass->implementsInterface(\Gruberro\MongoDbMigrations\MigrationInterface::class), 'The stored migration must implement the MigrationInterface');
 
             $this->assertArrayHasKey('last_execution_date', $executedMigration);
-            $this->assertInstanceOf(\MongoDate::class, $executedMigration['last_execution_date']);
+            $this->assertInstanceOf(MongoDB\BSON\UTCDatetime::class, $executedMigration['last_execution_date']);
             $this->assertGreaterThanOrEqual(new \DateTime('-5 sec'), $executedMigration['last_execution_date']->toDateTime(), 'The last execution date must be within the past seconds');
 
             $this->assertArrayHasKey('run_always', $executedMigration);
@@ -131,7 +133,7 @@ class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
 
             if ($reflectionClass->implementsInterface(\Gruberro\MongoDbMigrations\ContextualMigrationInterface::class)) {
                 $this->assertArrayHasKey('contexts', $executedMigration);
-                $this->assertEquals($migrationClass->getContexts(), $executedMigration['contexts'], 'The stored migration contexts must match');
+                $this->assertEquals($migrationClass->getContexts(), (array) $executedMigration['contexts'], 'The stored migration contexts must match');
             }
         }
     }
@@ -139,7 +141,7 @@ class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
     public function testExecuteIsAbortedOnLockedDatabase()
     {
         $databaseMigrationsLockCollection = $this->getTestDatabase()->selectCollection('DATABASE_MIGRATIONS_LOCK');
-        $databaseMigrationsLockCollection->insert(['locked' => true, 'last_locked_date' => new \MongoDate()]);
+        $databaseMigrationsLockCollection->insertOne(['locked' => true, 'last_locked_date' => new MongoDB\BSON\UTCDatetime((new \DateTime())->getTimestamp() * 1000)]);
 
         $this->setExpectedExceptionRegExp(
             \Symfony\Component\Console\Exception\RunTimeException::class,

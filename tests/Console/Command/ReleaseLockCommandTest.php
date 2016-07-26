@@ -1,10 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Gruberro\MongoDbMigrations\Tests\Console\Command;
 
 use Gruberro\MongoDbMigrations;
+use MongoDB;
 use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
 class ReleaseLockCommandTest extends MongoDbMigrations\Tests\TestCase
@@ -35,7 +35,7 @@ class ReleaseLockCommandTest extends MongoDbMigrations\Tests\TestCase
     public function testExecuteWithPreviousLock()
     {
         $databaseMigrationsLockCollection = $this->getTestDatabase()->selectCollection('DATABASE_MIGRATIONS_LOCK');
-        $databaseMigrationsLockCollection->insert(['locked' => true, 'last_locked_date' => new \MongoDate()]);
+        $databaseMigrationsLockCollection->insertOne(['locked' => true, 'last_locked_date' => new MongoDB\BSON\UTCDatetime((new \DateTime())->getTimestamp() * 1000)]);
 
         $application = new Application();
         $application->add(new MongoDbMigrations\Console\Command\ReleaseLockCommand());

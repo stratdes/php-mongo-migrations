@@ -1,15 +1,16 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace MyMigrations;
 
 use Gruberro\MongoDbMigrations;
+use MongoDB;
 
 class ReleaseCounter implements MongoDbMigrations\MigrationInterface, MongoDbMigrations\RunAlwaysMigrationInterface
 {
     /**
      * {@inheritdoc}
      */
-    public function getId()
+    public function getId(): string
     {
         return 'release-counter';
     }
@@ -17,7 +18,7 @@ class ReleaseCounter implements MongoDbMigrations\MigrationInterface, MongoDbMig
     /**
      * {@inheritdoc}
      */
-    public function getCreateDate()
+    public function getCreateDate(): \DateTime
     {
         return new \DateTime('2016-01-01 00:00:00');
     }
@@ -27,9 +28,9 @@ class ReleaseCounter implements MongoDbMigrations\MigrationInterface, MongoDbMig
      *
      * {@inheritdoc}
      */
-    public function execute(\MongoDB $db)
+    public function execute(MongoDB\Database $db)
     {
         $releaseCollection = $db->selectCollection('releases');
-        $releaseCollection->insert(['created' => new \MongoDate()]);
+        $releaseCollection->insertOne(['created' => new MongoDB\BSON\UTCDatetime((new \DateTime())->getTimestamp() * 1000)]);
     }
 }

@@ -1,8 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Gruberro\MongoDbMigrations\Console\Command;
 
 use Gruberro\MongoDbMigrations;
+use MongoDB\Client;
 use Symfony\Component\Console;
 
 class ReleaseLockCommand extends Console\Command\Command
@@ -35,12 +36,12 @@ class ReleaseLockCommand extends Console\Command\Command
      */
     protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output)
     {
-        $client = new \MongoClient($input->getOption('server'));
-        $db = $client->selectDB($input->getArgument('database'));
+        $client = new Client($input->getOption('server'));
+        $db = $client->selectDatabase($input->getArgument('database'));
         $output->writeln("<info>✓ Successfully established database connection</info>", $output::VERBOSITY_VERBOSE);
 
         $databaseMigrationsLockCollection = $db->selectCollection('DATABASE_MIGRATIONS_LOCK');
-        $databaseMigrationsLockCollection->update(['locked' => ['$exists' => true]], ['$set' => ['locked' => false]], ['upsert' => true]);
+        $databaseMigrationsLockCollection->updateOne(['locked' => ['$exists' => true]], ['$set' => ['locked' => false]], ['upsert' => true]);
         $output->writeln("<info>✓ Successfully released migration lock</info>");
     }
 }
