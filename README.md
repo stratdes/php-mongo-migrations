@@ -9,7 +9,7 @@ This command line application supports you in managing migrations for your Mongo
 ## Installation
 
 ```
-composer require gruberro/php-mongo-migrations
+composer require gruberro/php-mongo-migrations=^0.2
 ```
 
 ## Writing migrations
@@ -17,16 +17,19 @@ composer require gruberro/php-mongo-migrations
 You can write you own migrations by implementing the [`Gruberro\MongoDbMigrations\MigrationInterface`](lib/MigrationInterface.php) interface:
 
 ```php
+<?php declare(strict_types=1);
+
 namespace MyMigrations;
 
 use Gruberro\MongoDbMigrations;
+use MongoDB\Database;
 
 class CreateUserCollection implements MongoDbMigrations\MigrationInterface
 {
     /**
      * {@inheritdoc}
      */
-    public function getId()
+    public function getId(): string
     {
         return 'create-user-collection-and-its-indexes';
     }
@@ -34,7 +37,7 @@ class CreateUserCollection implements MongoDbMigrations\MigrationInterface
     /**
      * {@inheritdoc}
      */
-    public function getCreateDate()
+    public function getCreateDate(): \DateTime
     {
         return new \DateTime('2016-02-25 16:30:00');
     }
@@ -47,13 +50,13 @@ class CreateUserCollection implements MongoDbMigrations\MigrationInterface
      *
      * {@inheritdoc}
      */
-    public function execute(\MongoDB $db)
+    public function execute(Database $db)
     {
         $userCollection = $db->selectCollection('user');
 
-        $userCollection->createIndex(['email_address' => true], ['unique' => true]);
+        $userCollection->createIndex(['email_address' => 1], ['unique' => true]);
 
-        $userCollection->insert(['username' => 'admin', 'password' => password_hash('topsecret', PASSWORD_DEFAULT), 'email_address' => 'admin@exmaple.com']);
+        $userCollection->insertOne(['username' => 'admin', 'password' => password_hash('topsecret', PASSWORD_DEFAULT), 'email_address' => 'admin@exmaple.com']);
     }
 }
 ```
