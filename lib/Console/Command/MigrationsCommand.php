@@ -109,6 +109,7 @@ class MigrationsCommand extends Console\Command\Command
         $output->writeln("<info>✓ Reordered all migration classes according to their create date</info>", $output::VERBOSITY_VERBOSE);
 
         $databaseMigrationsLockCollection = $db->selectCollection('DATABASE_MIGRATIONS_LOCK');
+        $databaseMigrationsLockCollection->createIndex(['locked' => 1]);
 
         $currentLock = $databaseMigrationsLockCollection->findOneAndReplace(['locked' => ['$exists' => true]], ['locked' => true, 'last_locked_date' => new MongoDB\BSON\UTCDatetime((new \DateTime())->getTimestamp() * 1000)], ['upsert' => true]);
         if ($currentLock !== null && $currentLock->locked === true) {
@@ -119,11 +120,7 @@ class MigrationsCommand extends Console\Command\Command
             $output->writeln("<info>✓ Successfully acquired migration lock</info>", $output::VERBOSITY_VERBOSE);
 
             $databaseMigrationsCollection = $db->selectCollection('DATABASE_MIGRATIONS');
-
-            if (count($databaseMigrationsCollection->listIndexes()) <= 1) {
-                $databaseMigrationsCollection->createIndex(['migration_id' => 1],
-                    ['unique' => true, 'background' => false]);
-            }
+            $databaseMigrationsCollection->createIndex(['migration_id' => 1], ['unique' => true, 'background' => false]);
 
             $progress = new Console\Helper\ProgressBar($output, count($migrations));
 
