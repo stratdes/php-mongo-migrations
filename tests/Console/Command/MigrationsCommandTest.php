@@ -5,6 +5,8 @@ namespace Gruberro\MongoDbMigrations\Tests\Console\Command;
 use Gruberro\MongoDbMigrations;
 use MongoDB;
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
+use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Tester\CommandTester;
 
 class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
@@ -17,6 +19,7 @@ class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
         $application = new Application();
         $application->add(new MongoDbMigrations\Console\Command\MigrationsCommand());
 
+        /** @var MongoDbMigrations\Console\Command\MigrationsCommand $command */
         $command = $application->find('php-mongodb-migrations:migrate');
         $commandTester = new CommandTester($command);
         $commandTester->execute(
@@ -143,8 +146,8 @@ class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
         $databaseMigrationsLockCollection = $this->getTestDatabase()->selectCollection('DATABASE_MIGRATIONS_LOCK');
         $databaseMigrationsLockCollection->insertOne(['locked' => true, 'last_locked_date' => new MongoDB\BSON\UTCDatetime((new \DateTime())->getTimestamp() * 1000)]);
 
-        $this->setExpectedExceptionRegExp(
-            \Symfony\Component\Console\Exception\RunTimeException::class,
+        $this->expectException(RunTimeException::class);
+        $this->expectExceptionMessageRegExp(
             '/Concurrent migrations are not allowed/'
         );
 
@@ -165,8 +168,8 @@ class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
 
     public function testExecuteWithInvalidMigrationDirectory()
     {
-        $this->setExpectedExceptionRegExp(
-            \Symfony\Component\Console\Exception\InvalidArgumentException::class,
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageRegExp(
             '/\'invalid\/dir\' is no valid directory/'
         );
 
@@ -195,8 +198,8 @@ class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
      */
     public function testExecuteWithDuplicatedMigrationIds()
     {
-        $this->setExpectedExceptionRegExp(
-            \Symfony\Component\Console\Exception\RuntimeException::class,
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessageRegExp(
             '/Found a non unique migration id \'migration\' in \'TestMigrations\\\\DuplicateMigrationIds\\\\MigrationB\', already defined by migration class \'TestMigrations\\\\DuplicateMigrationIds\\\\MigrationA\'/'
         );
 
@@ -225,8 +228,8 @@ class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
      */
     public function testExecuteWithFailingMigrations()
     {
-        $this->setExpectedExceptionRegExp(
-            \Symfony\Component\Console\Exception\RuntimeException::class,
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessageRegExp(
             '/Error while executing migrations/'
         );
 
@@ -271,5 +274,30 @@ class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
 
         $databaseMigrationsCollection = $this->getTestDatabase()->selectCollection('DATABASE_MIGRATIONS');
         $this->assertNull($databaseMigrationsCollection->findOne(['migration_id' => md5('some-context-migration')]));
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testExecuteAnEmptyContextSpecification()
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessageRegExp(
+            '/Error while executing migrations/'
+        );
+
+        $application = new Application();
+        $application->add(new MongoDbMigrations\Console\Command\MigrationsCommand());
+
+        $command = $application->find('php-mongodb-migrations:migrate');
+        $commandTester = new CommandTester($command);
+        $commandTester->execute(
+            [
+                'command' => $command->getName(),
+                'database' => $this->getTestDatabaseName(),
+                'migration-directories' => [__DIR__ . '/EmptyContextualMigrations/'],
+                '--contexts' => ['testing']
+            ]
+        );
     }
 }

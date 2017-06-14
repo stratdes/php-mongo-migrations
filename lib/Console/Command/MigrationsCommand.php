@@ -146,6 +146,10 @@ class MigrationsCommand extends Console\Command\Command
                 $progress->advance();
 
                 if ($migration instanceof MongoDbMigrations\ContextualMigrationInterface && $input->getOption('contexts') !== []) {
+                    if ($migration->getContexts() === []) {
+                        throw new \InvalidArgumentException('An empty context specification is not allowed');
+                    }
+
                     if (array_intersect($migration->getContexts(), $input->getOption('contexts')) === []) {
                         continue;
                     }
