@@ -16,7 +16,7 @@ foreach ($autoloadPaths as $autoloadPath) {
 }
 
 if (!defined('COMPOSER_AUTOLOAD_PATH')) {
-    fwrite(STDERR, 'Could not find composer autoloader!');
+    fwrite(STDERR, 'Could not find composer autoloader!' . PHP_EOL);
     exit(1);
 }
 
