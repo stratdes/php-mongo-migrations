@@ -76,11 +76,7 @@ abstract class AbstractCommand extends Console\Command\Command
         $this->output->writeln("<info>✓ Found {$migrationClassesCount} valid migration classes</info>", OutputInterface::VERBOSITY_VERBOSE);
 
         uasort($migrations, function (MongoDbMigrations\MigrationInterface $a, MongoDbMigrations\MigrationInterface $b) {
-            if ($a->getCreateDate() === $b->getCreateDate()) {
-                return 0;
-            }
-
-            return $a->getCreateDate() < $b->getCreateDate() ? -1 : 1;
+            return $a->getCreateDate() <=> $b->getCreateDate();
         });
 
         $this->output->writeln("<info>✓ Reordered all migration classes according to their create date</info>", OutputInterface::VERBOSITY_VERBOSE);
