@@ -28,4 +28,5 @@ use Symfony\Component\Console\Application;
 $application = new Application();
 $application->add(new Command\MigrationsCommand());
 $application->add(new Command\ReleaseLockCommand());
+$application->add(new Command\VersionsCommand());
 $application->run();

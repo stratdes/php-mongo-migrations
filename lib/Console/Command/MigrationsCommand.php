@@ -6,7 +6,7 @@ use Gruberro\MongoDbMigrations;
 use MongoDB;
 use Symfony\Component\Console;
 
-class MigrationsCommand extends Console\Command\Command
+class MigrationsCommand extends AbstractCommand
 {
     /**
      * {@inheritdoc}
@@ -49,79 +49,14 @@ class MigrationsCommand extends Console\Command\Command
      */
     protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output)
     {
-        $client = new MongoDB\Client($input->getOption('server'));
-        $db = $client->selectDatabase($input->getArgument('database'));
-        $output->writeln("<info>✓ Successfully established database connection</info>", $output::VERBOSITY_VERBOSE);
-
         $directories = $input->getArgument('migration-directories');
-        foreach ($directories as $directory) {
-            if (! is_dir($directory)) {
-                throw new Console\Exception\InvalidArgumentException("'{$directory}' is no valid directory");
-            }
+        $migrations = $this->getMigrations($directories);
+        $db = $this->connect($input->getOption('server'), $input->getArgument('database'));
 
-            $output->writeln("<comment>Iterating '{$directory}' for potential migrations classes</comment>", $output::VERBOSITY_DEBUG);
-            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory), \RecursiveIteratorIterator::LEAVES_ONLY);
-
-            /** @var \SplFileInfo $file */
-            foreach ($iterator as $file) {
-                if ($file->getBasename('.php') === $file->getBasename()) {
-                    continue;
-                }
-
-                require_once $file->getRealPath();
-
-                $output->writeln("<comment>Loaded potential migration '{$file->getRealPath()}'</comment>", $output::VERBOSITY_DEBUG);
-            }
-        }
-
-        /** @var MongoDbMigrations\MigrationInterface[] $migrations */
-        $migrations = [];
-        foreach (get_declared_classes() as $className) {
-            $reflectionClass = new \ReflectionClass($className);
-
-            if ($reflectionClass->implementsInterface(MongoDbMigrations\MigrationInterface::class)) {
-                /** @var MongoDbMigrations\MigrationInterface $newInstance */
-                $newInstance = $reflectionClass->newInstance();
-                $id = md5($newInstance->getId());
-
-                if (isset($migrations[$id])) {
-                    $existingMigrationClass = get_class($migrations[$id]);
-                    throw new Console\Exception\RuntimeException("Found a non unique migration id '{$newInstance->getId()}' in '{$reflectionClass->getName()}', already defined by migration class '{$existingMigrationClass}'");
-                }
-
-                $migrations[$id] = $newInstance;
-
-                $output->writeln("<comment>Found valid migration class '{$reflectionClass->getName()}'</comment>", $output::VERBOSITY_DEBUG);
-            }
-        }
-
-        $migrationClassesCount = count($migrations);
-        $output->writeln("<info>✓ Found {$migrationClassesCount} valid migration classes</info>", $output::VERBOSITY_VERBOSE);
-
-        uasort($migrations, function (MongoDbMigrations\MigrationInterface $a, MongoDbMigrations\MigrationInterface $b) {
-            if ($a->getCreateDate() === $b->getCreateDate()) {
-                return 0;
-            }
-
-            return $a->getCreateDate() < $b->getCreateDate() ? -1 : 1;
-        });
-
-        $output->writeln("<info>✓ Reordered all migration classes according to their create date</info>", $output::VERBOSITY_VERBOSE);
-
-        $databaseMigrationsLockCollection = $db->selectCollection('DATABASE_MIGRATIONS_LOCK');
-        $databaseMigrationsLockCollection->createIndex(['locked' => 1]);
-
-        $currentLock = $databaseMigrationsLockCollection->findOneAndReplace(['locked' => ['$exists' => true]], ['locked' => true, 'last_locked_date' => new MongoDB\BSON\UTCDatetime((new \DateTime())->getTimestamp() * 1000)], ['upsert' => true]);
-        if ($currentLock !== null && $currentLock->locked === true) {
-            throw new Console\Exception\RuntimeException('Concurrent migrations are not allowed');
-        }
+        $this->acquireLock($db);
 
         try {
-            $output->writeln("<info>✓ Successfully acquired migration lock</info>", $output::VERBOSITY_VERBOSE);
-
-            $databaseMigrationsCollection = $db->selectCollection('DATABASE_MIGRATIONS');
-            $databaseMigrationsCollection->createIndex(['migration_id' => 1], ['unique' => true, 'background' => false]);
-
+            $databaseMigrationsCollection = $this->getMigrationsCollection($db);
             $progress = new Console\Helper\ProgressBar($output, count($migrations));
 
             switch ($output->getVerbosity()) {
@@ -189,8 +124,7 @@ class MigrationsCommand extends Console\Command\Command
         } catch (\Exception $e) {
             throw new Console\Exception\RuntimeException('Error while executing migrations', $e->getCode(), $e);
         } finally {
-            $databaseMigrationsLockCollection->updateOne(['locked' => true], ['$set' => ['locked' => false]]);
-            $output->writeln("<info>✓ Successfully released migration lock</info>", $output::VERBOSITY_VERBOSE);
+            $this->releaseLock($db);
         }
     }
 }
