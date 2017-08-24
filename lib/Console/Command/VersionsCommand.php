@@ -64,11 +64,11 @@ class VersionsCommand extends AbstractCommand
             ->setHelp(<<<EOT
 The <info>%command.name%</info> command allows you to manually add, delete or synchronize migrations from the version collection:
 
-    <info>%command.full_name% DATABASE_NAME MIGRATION_ID /path/to/migrations --add</info>
+    <info>%command.full_name% DATABASE_NAME /path/to/migrations --id=MIGRATION_ID --add</info>
 
 If you want to delete a version you can use the <comment>--delete</comment> option:
 
-    <info>%command.full_name% DATABASE_NAME MIGRATION_ID /path/to/migrations --delete</info>
+    <info>%command.full_name% DATABASE_NAME /path/to/migrations --id=MIGRATION_ID --delete</info>
 
 If you want to synchronize by adding or deleting all migrations available in the version collection you can use the <comment>--all</comment> option:
 
