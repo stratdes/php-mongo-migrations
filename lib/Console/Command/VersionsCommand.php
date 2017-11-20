@@ -89,8 +89,6 @@ EOT
         $migrations = $this->getMigrations($directories);
         $db = $this->connect($input->getOption('server'), $input->getArgument('database'));
 
-        $this->acquireLock($db);
-
         $add = $input->getOption('add');
         $delete = $input->getOption('delete');
         $all = $input->getOption('all');
@@ -107,6 +105,8 @@ EOT
         if (!$all && $id === null) {
             throw new Console\Exception\RuntimeException("Specify --all or a single migration id");
         }
+
+        $this->acquireLock($db);
 
         try {
             if ($all) {
