@@ -212,6 +212,36 @@ class VersionsCommandTest extends MongoDbMigrations\Tests\TestCase
         );
     }
 
+    public function testExecuteWithValidationErrorDoesNotLockDatabase()
+    {
+        $application = new Application();
+        $application->add(new MongoDbMigrations\Console\Command\VersionsCommand());
+
+        $command = $application->find('php-mongodb-migrations:version');
+        $commandTester = new CommandTester($command);
+        $hasValidationException = false;
+
+        try {
+            $commandTester->execute(
+                [
+                    'command' => $command->getName(),
+                    'database' => $this->getTestDatabaseName(),
+                ]
+            );
+        } catch (\RuntimeException $e) {
+            $hasValidationException = true;
+            $this->assertSame('Specify --all or a single migration id', $e->getMessage());
+        }
+
+        $this->assertTrue($hasValidationException, 'Expected a validation exception to be thrown');
+
+        $databaseMigrationsLockCollection = $this->getTestDatabase()->selectCollection('DATABASE_MIGRATIONS_LOCK');
+        $this->assertNull(
+            $databaseMigrationsLockCollection->findOne(['locked' => ['$exists' => true]]),
+            'The database lock must not be acquired, even if the command fails!'
+        );
+    }
+
     public function testExecuteASingleIdOnly()
     {
         $application = new Application();
