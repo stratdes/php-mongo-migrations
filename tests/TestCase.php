@@ -9,9 +9,9 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 abstract class TestCase extends BaseTestCase
 {
     /**
-     * {@inheritdoc}
+     * @before
      */
-    protected function setUp()
+    protected function setupDatabase()
     {
         if (! $this->hasDependencies()) {
             $this->getTestDatabase()->drop();
