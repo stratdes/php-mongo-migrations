@@ -200,7 +200,7 @@ class MigrationsCommandTest extends MongoDbMigrations\Tests\TestCase
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessageRegExp(
-            '/Found a non unique migration id \'migration\' in \'TestMigrations\\\\DuplicateMigrationIds\\\\MigrationB\', already defined by migration class \'TestMigrations\\\\DuplicateMigrationIds\\\\MigrationA\'/'
+            "#Found a non unique migration id 'migration' in 'TestMigrations\\\\DuplicateMigrationIds\\\\Migration[A-B]', already defined by migration class 'TestMigrations\\\\DuplicateMigrationIds\\\\Migration[A-B]'#"
         );
 
         $application = new Application();
