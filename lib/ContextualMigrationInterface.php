@@ -7,7 +7,7 @@ interface ContextualMigrationInterface
     /**
      * Returns a list of context names
      *
-     * @return array
+     * @return string[]
      */
     public function getContexts(): array;
 }
