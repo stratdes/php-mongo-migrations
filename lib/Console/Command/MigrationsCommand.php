@@ -91,7 +91,7 @@ class MigrationsCommand extends AbstractCommand
                 }
 
                 if (!$migration instanceof MongoDbMigrations\RunAlwaysMigrationInterface) {
-                    if ($databaseMigrationsCollection->count(['migration_id' => $id]) > 0) {
+                    if ($databaseMigrationsCollection->countDocuments(['migration_id' => $id]) > 0) {
                         continue;
                     }
                 }
