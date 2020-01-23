@@ -34,7 +34,7 @@ class ReleaseLockCommand extends Console\Command\Command
     /**
      * {@inheritdoc}
      */
-    protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output)
+    protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output): int
     {
         $client = new Client($input->getOption('server'));
         $db = $client->selectDatabase($input->getArgument('database'));
@@ -43,5 +43,7 @@ class ReleaseLockCommand extends Console\Command\Command
         $databaseMigrationsLockCollection = $db->selectCollection('DATABASE_MIGRATIONS_LOCK');
         $databaseMigrationsLockCollection->updateOne(['locked' => ['$exists' => true]], ['$set' => ['locked' => false]], ['upsert' => true]);
         $output->writeln("<info>✓ Successfully released migration lock</info>");
+
+        return 0;
     }
 }

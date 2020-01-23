@@ -82,7 +82,7 @@ EOT
     /**
      * {@inheritdoc}
      */
-    protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output)
+    protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output): int
     {
         $id = $input->getOption('id');
         $directories = $input->getArgument('migration-directories');
@@ -133,6 +133,8 @@ EOT
         } finally {
             $this->releaseLock($db);
         }
+
+        return 0;
     }
 
     /**
