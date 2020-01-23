@@ -47,7 +47,7 @@ class MigrationsCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output)
+    protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output): int
     {
         $directories = $input->getArgument('migration-directories');
         $migrations = $this->getMigrations($directories);
@@ -126,5 +126,7 @@ class MigrationsCommand extends AbstractCommand
         } finally {
             $this->releaseLock($db);
         }
+
+        return 0;
     }
 }
