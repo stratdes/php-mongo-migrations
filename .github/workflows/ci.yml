@@ -1,0 +1,54 @@
+name: "Continuous Integration"
+
+on: [push, pull_request]
+
+env:
+  fail-fast: false
+
+jobs:
+  phpunit:
+    name: "PHPUnit"
+    runs-on: "${{ matrix.os }}"
+    services:
+      mongo:
+        image: mongo
+        ports:
+          - 27017:27017
+
+    strategy:
+      matrix:
+        os:
+          - "ubuntu-20.04"
+        php-version:
+          - "7.4"
+        mongodb-version:
+          - "5.0"
+          - "4.4"
+          - "4.2"
+          - "4.0"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+        with:
+          fetch-depth: 2
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          php-version: "${{ matrix.php-version }}"
+          extensions: "mongodb"
+
+      - name: "Install dependencies with Composer"
+        uses: "ramsey/composer-install@v1"
+        with:
+          composer-options: "--prefer-dist"
+
+      - name: "Upload composer.lock as build artifact"
+        uses: "actions/upload-artifact@v2"
+        with:
+          name: "composer.lock"
+          path: "composer.lock"
+
+      - name: "Run PHPUnit"
+        run: "vendor/bin/phpunit"
