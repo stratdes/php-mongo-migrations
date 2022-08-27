@@ -13,7 +13,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function setupDatabase()
     {
-        if (! $this->hasDependencies()) {
+        if (! $this->requires()) {
             $this->getTestDatabase()->drop();
         }
     }
