@@ -5,7 +5,7 @@ This command line application supports you in managing migrations for your Mongo
 ## Installation
 
 ```
-composer require gruberro/php-mongo-migrations=^0.2
+composer require stratdes/php-mongo-migrations=^0.1
 ```
 
 ## Writing migrations
