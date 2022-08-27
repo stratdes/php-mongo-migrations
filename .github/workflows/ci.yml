@@ -21,7 +21,10 @@ jobs:
           - "ubuntu-20.04"
         php-version:
           - "7.4"
+          - "8.0"
+          - "8.1"
         mongodb-version:
+          - "6.0"
           - "5.0"
           - "4.4"
           - "4.2"
