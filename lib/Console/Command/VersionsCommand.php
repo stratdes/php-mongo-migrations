@@ -22,9 +22,9 @@ class VersionsCommand extends AbstractCommand
             ->addOption(
                 'server',
                 's',
-                InputOption::VALUE_REQUIRED,
+                InputOption::VALUE_OPTIONAL,
                 'The connection string (e.g. mongodb://[username:password@]host1[:port1][,host2[:port2:],...]/db)',
-                'mongodb://localhost:27017'
+                getenv('MONGO_URL') !== false ? getenv('MONGO_URL') : 'mongodb://localhost:27017'
             )
             ->addArgument(
                 'database',
