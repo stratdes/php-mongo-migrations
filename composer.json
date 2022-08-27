@@ -1,5 +1,5 @@
 {
-    "name": "gruberro/php-mongo-migrations",
+    "name": "stratdes/php-mongo-migrations",
     "description": "Manage changes for your MongoDB documents",
     "type": "library",
     "license": "MIT",
